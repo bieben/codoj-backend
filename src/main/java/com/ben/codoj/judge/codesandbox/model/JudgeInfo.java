@@ -1,4 +1,4 @@
-package com.ben.codoj.model.dto.problemSubmit;
+package com.ben.codoj.judge.codesandbox.model;
 
 import lombok.Data;
 
@@ -16,11 +16,10 @@ public class JudgeInfo {
     /**
      * 消耗内存
      */
-    private long memory;
+    private Long memory;
 
     /**
-     * 消耗时间
+     * 消耗时间（KB）
      */
-    private long time;
-
+    private Long time;
 }

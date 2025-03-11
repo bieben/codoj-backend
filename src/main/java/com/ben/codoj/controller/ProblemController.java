@@ -11,11 +11,16 @@ import com.ben.codoj.constant.UserConstant;
 import com.ben.codoj.exception.BusinessException;
 import com.ben.codoj.exception.ThrowUtils;
 import com.ben.codoj.model.dto.problem.*;
+import com.ben.codoj.model.dto.problemSubmit.ProblemSubmitAddRequest;
+import com.ben.codoj.model.dto.problemSubmit.ProblemSubmitQueryRequest;
 import com.ben.codoj.model.dto.user.UserQueryRequest;
 import com.ben.codoj.model.entity.Problem;
+import com.ben.codoj.model.entity.ProblemSubmit;
 import com.ben.codoj.model.entity.User;
+import com.ben.codoj.model.vo.ProblemSubmitVO;
 import com.ben.codoj.model.vo.ProblemVO;
 import com.ben.codoj.service.ProblemService;
+import com.ben.codoj.service.ProblemSubmitService;
 import com.ben.codoj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +45,9 @@ public class ProblemController {
 
     @Resource
     private UserService userService;
+    
+    @Resource
+    private ProblemSubmitService problemSubmitService;
 
     // region 增删改查
 
@@ -140,6 +148,30 @@ public class ProblemController {
         boolean result = problemService.updateById(problem);
         return ResultUtils.success(result);
     }
+
+    /**
+     * 根据 id 获取
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<Problem> getProblemById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Problem problem = problemService.getById(id);
+        if (problem == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        // 不是本人或管理员，不能直接获取所有信息
+        if (!problem.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return ResultUtils.success(problem);
+    }
+
 
     /**
      * 根据 id 获取
@@ -261,4 +293,41 @@ public class ProblemController {
         return ResultUtils.success(result);
     }
 
+
+    /**
+     * 提交题目
+     *
+     * @param problemSubmitAddRequest
+     * @param request
+     * @return 提交记录的 Id
+     */
+    @PostMapping("/problem_submit/do")
+    public BaseResponse<Long> doProblemSubmit(@RequestBody ProblemSubmitAddRequest problemSubmitAddRequest,
+                                              HttpServletRequest request) {
+        if (problemSubmitAddRequest == null || problemSubmitAddRequest.getProblemId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 登录才能点赞
+        final User loginUser = userService.getLoginUser(request);
+        long problemSubmitId = problemSubmitService.doProblemSubmit(problemSubmitAddRequest, loginUser);
+        return ResultUtils.success(problemSubmitId);
+    }
+
+    /**
+     * 分页获取 题目提交列表（普通用户只能看到非答案，提交代码等公开信息）
+     *
+     * @param problemSubmitQueryRequest
+     * @return
+     */
+    @PostMapping("/problem_submit/list/page")
+    public BaseResponse<Page<ProblemSubmitVO>> listProblemSubmitByPage(@RequestBody ProblemSubmitQueryRequest problemSubmitQueryRequest,
+                                                                       HttpServletRequest request) {
+        long current = problemSubmitQueryRequest.getCurrent();
+        long size = problemSubmitQueryRequest.getPageSize();
+        final User loginUser = userService.getLoginUser(request);
+        // 从数据库中查到了原始的提交题目数据
+        Page<ProblemSubmit> problemSubmitPage = problemSubmitService.page(new Page<>(current, size),
+                problemSubmitService.getQueryWrapper(problemSubmitQueryRequest));
+        return ResultUtils.success(problemSubmitService.getProblemSubmitVOPage(problemSubmitPage, loginUser));
+    }
 }

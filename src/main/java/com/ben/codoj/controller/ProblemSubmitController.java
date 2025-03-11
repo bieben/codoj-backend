@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/problem_submit")
 @Slf4j
+@Deprecated
 public class ProblemSubmitController {
 
     @Resource

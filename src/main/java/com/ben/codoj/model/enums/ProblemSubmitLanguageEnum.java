@@ -13,9 +13,10 @@ import java.util.stream.Collectors;
  */
 public enum ProblemSubmitLanguageEnum {
 
+    PYTHON("python", "python"),
     JAVA("java", "java"),
-    CPLUSPLUS("c++", "c++"),
-    GOLANG("golang", "golang");
+    CPLUSPLUS("cpp", "cpp"),
+    GOLANG("go", "go");
 
     private final String text;
 

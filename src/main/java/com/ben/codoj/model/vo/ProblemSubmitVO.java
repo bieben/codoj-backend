@@ -1,7 +1,7 @@
 package com.ben.codoj.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.ben.codoj.model.dto.problemSubmit.JudgeInfo;
+import com.ben.codoj.judge.codesandbox.model.JudgeInfo;
 import com.ben.codoj.model.entity.ProblemSubmit;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

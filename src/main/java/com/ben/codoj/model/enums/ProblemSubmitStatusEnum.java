@@ -13,7 +13,7 @@ public enum ProblemSubmitStatusEnum {
 
     WAITING("waiting", 0),
     RUNNING("running", 1),
-    SUCCESS("success", 2),
+    SUCCEED("succeed", 2),
     FAILED("failed", 3);
 
     private final String text;
